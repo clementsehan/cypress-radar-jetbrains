@@ -1,19 +1,32 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.clementsehan.cypressradarjetbrains</id>
-    <name>cypress-radar-jetbrains</name>
+    <name>Cypress Radar</name>
     <vendor>clementsehan</vendor>
     <description><![CDATA[
-        <p><b>cypress-radar-jetbrains</b> is a repository that provides a pure template to make it easier to create a new plugin project.</p>
-        <p>The main goal of this template is to speed up the setup phase of plugin development for both new and experienced developers by preconfiguring the project scaffold and CI, linking to the proper documentation pages, and keeping everything organized.</p>
+        <p><b>Cypress Radar</b> displays Cypress test health inline in your spec files, powered by the Cypress Cloud Data Extract API.</p>
+        <p>For each <code>it()</code> or <code>test()</code> call, a color-coded block appears above the line showing the historical pass rate and clickable links to failing runs:</p>
+        <ul>
+            <li><b>Green</b> — 100% pass rate</li>
+            <li><b>Yellow</b> — 75–99% pass rate (flaky)</li>
+            <li><b>Red</b> — below 75% or failing in the most recent run</li>
+            <li><b>Gray</b> — no historical data yet</li>
+            <li><b>Blue</b> — dynamic title that cannot be statically matched</li>
+        </ul>
+        <p>Each block shows <code>passes/total (rate%), failed in runs: #1234 #1235</code>. Run numbers link directly to the Cypress Cloud test replay.</p>
+        <p>Supports <code>it('title')</code>, <code>it("title")</code>, <code>it(`title`)</code>, and multi-line forms. Results are cached for 5 minutes.</p>
+        <p>Configure by placing a <code>flake-guard.json</code> file in your project root:</p>
+        <pre>{ "provider": "cypress-cloud", "apiToken": "YOUR_DATA_EXTRACT_API_TOKEN" }</pre>
+        <p>The API token must be a <b>Cypress Cloud Data Extract API key</b> (Enterprise feature). Generate one at cloud.cypress.io → Integrations → Data Extract API.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
-
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.clementsehan.cypressradarjetbrains.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.clementsehan.cypressradarjetbrains.startup.MyProjectActivity" />
+        <notificationGroup id="Cypress Radar" displayType="BALLOON"
+                           bundle="messages.CypressRadarBundle" key="notification.group"/>
+        <postStartupActivity
+            implementation="com.github.clementsehan.cypressradarjetbrains.startup.FlakeGuardStartupActivity"/>
     </extensions>
+
 </idea-plugin>
