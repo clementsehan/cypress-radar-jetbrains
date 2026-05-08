@@ -21,8 +21,8 @@ dependencies {
 intellijPlatform {
     pluginVerification {
         ides {
-            // Only verify against the IDE we build with — avoids downloading GBs of extra distributions in CI
-            recommended()
+            // Only verify against the IDE we build with — reuses the cached download, no extra CI downloads
+            current()
         }
     }
 }
