@@ -17,3 +17,12 @@ dependencies {
         testFramework(TestFrameworkType.Platform)
     }
 }
+
+intellijPlatform {
+    pluginVerification {
+        ides {
+            // Only verify against the IDE we build with — avoids downloading GBs of extra distributions in CI
+            recommended()
+        }
+    }
+}

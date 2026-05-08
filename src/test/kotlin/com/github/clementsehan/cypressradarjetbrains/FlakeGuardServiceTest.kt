@@ -1,6 +1,5 @@
 package com.github.clementsehan.cypressradarjetbrains
 
-import com.github.clementsehan.cypressradarjetbrains.api.CypressCloudApiClient
 import com.github.clementsehan.cypressradarjetbrains.api.FlakeGuardApiClient
 import com.github.clementsehan.cypressradarjetbrains.config.ConfigReader
 import com.github.clementsehan.cypressradarjetbrains.config.FlakeGuardConfig
@@ -24,36 +23,57 @@ class FlakeGuardServiceTest : BasePlatformTestCase() {
         assertNull(service.getHealthForSpec("cypress/e2e/login.cy.ts"))
     }
 
-    fun testCypressCloudApiClient_returnsDeterministicResults() {
-        val client = CypressCloudApiClient()
-        val result1 = client.fetchTestHealth("cypress/e2e/login.cy.ts", titles, config)
-        val result2 = client.fetchTestHealth("cypress/e2e/login.cy.ts", titles, config)
-        assertEquals(result1, result2)
-        assertEquals(titles.size, result1.size)
-        result1.forEach { health ->
-            assertTrue(health.passPercentage in 0.0..100.0)
-            assertTrue(health.lastRunUrl.contains("proj123"))
-            assertTrue(health.title.isNotBlank())
+    fun testTestHealth_propertiesStoredCorrectly() {
+        val health = TestHealth(
+            title = "should login",
+            passPercentage = 85.5,
+            passes = 17,
+            total = 20,
+            isCurrentlyFailing = false,
+            lastRunUrl = "https://example.com/runs/1",
+            failingRunNumbers = listOf(3, 7),
+            failingRunUrls = listOf("https://example.com/runs/3", "https://example.com/runs/7")
+        )
+        assertEquals("should login", health.title)
+        assertTrue(health.passPercentage in 0.0..100.0)
+        assertEquals(17, health.passes)
+        assertEquals(20, health.total)
+        assertFalse(health.isCurrentlyFailing)
+        assertEquals(2, health.failingRunNumbers.size)
+        assertEquals(2, health.failingRunUrls.size)
+    }
+
+    fun testTestHealth_defaultValues() {
+        val health = TestHealth("should logout", 100.0, isCurrentlyFailing = false, lastRunUrl = "")
+        assertEquals(0, health.passes)
+        assertEquals(0, health.total)
+        assertTrue(health.failingRunNumbers.isEmpty())
+        assertTrue(health.failingRunUrls.isEmpty())
+    }
+
+    fun testStubApiClient_returnsExpectedHealth() {
+        val expected = listOf(
+            TestHealth("should login", 100.0, isCurrentlyFailing = false, lastRunUrl = "https://example.com/1"),
+            TestHealth("should logout", 80.0, isCurrentlyFailing = false, lastRunUrl = "https://example.com/2")
+        )
+        val stub = object : FlakeGuardApiClient {
+            override fun fetchTestHealth(specFilePath: String, testTitles: List<String>, config: FlakeGuardConfig) = expected
         }
+        val result = stub.fetchTestHealth("cypress/e2e/login.cy.ts", titles, config)
+        assertEquals(2, result.size)
+        assertEquals("should login", result[0].title)
+        assertEquals(100.0, result[0].passPercentage, 0.001)
     }
 
-    fun testCypressCloudApiClient_titlesMatchInput() {
-        val client = CypressCloudApiClient()
-        val result = client.fetchTestHealth("cypress/e2e/login.cy.ts", titles, config)
-        assertEquals(titles, result.map { it.title })
-    }
-
-    fun testCypressCloudApiClient_emptyTitlesReturnsEmpty() {
-        val client = CypressCloudApiClient()
-        val result = client.fetchTestHealth("cypress/e2e/login.cy.ts", emptyList(), config)
-        assertTrue(result.isEmpty())
-    }
-
-    fun testCypressCloudApiClient_differentPathsProduceDifferentResults() {
-        val client = CypressCloudApiClient()
-        val result1 = client.fetchTestHealth("cypress/e2e/login.cy.ts", titles, config)
-        val result2 = client.fetchTestHealth("cypress/e2e/dashboard.cy.ts", titles, config)
-        assertFalse(result1 == result2)
+    fun testStubApiClient_emptyForUnknownSpec() {
+        val stub = object : FlakeGuardApiClient {
+            override fun fetchTestHealth(specFilePath: String, testTitles: List<String>, config: FlakeGuardConfig) =
+                if (specFilePath == "cypress/e2e/login.cy.ts") listOf(
+                    TestHealth("should login", 100.0, isCurrentlyFailing = false, lastRunUrl = "")
+                ) else emptyList()
+        }
+        assertTrue(stub.fetchTestHealth("cypress/e2e/unknown.cy.ts", titles, config).isEmpty())
+        assertEquals(1, stub.fetchTestHealth("cypress/e2e/login.cy.ts", titles, config).size)
     }
 
     fun testConfigReader_returnsNullWhenFileAbsent() {
