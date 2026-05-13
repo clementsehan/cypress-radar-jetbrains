@@ -1,45 +1,72 @@
-# cypress-radar-jetbrains
+# Cypress Radar
 
-![Build](https://github.com/clementsehan/cypress-radar-jetbrains/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
+A JetBrains IDE plugin that displays Cypress test health inline in your spec files, powered by the **Cypress Cloud Data Extract API**.
 
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [ ] Get familiar with the [template documentation][template].
-- [ ] Adjust the [group](./gradle.properties), as well as the [id](./src/main/resources/META-INF/plugin.xml), [name](./src/main/resources/META-INF/plugin.xml), and [sources package](./src/main/kotlin).
-- [ ] Adjust the plugin [description](./src/main/resources/META-INF/plugin.xml) (see [Tips][docs:plugin-description]) and this README to describe what your plugin does.
-- [ ] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html?from=IJPluginTemplate).
-- [ ] [Publish a plugin manually](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate) for the first time.
-- [ ] Set the `MARKETPLACE_ID` in the above README badges. You can obtain it once the plugin is published to JetBrains Marketplace.
-- [ ] Set the [Plugin Signing](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html?from=IJPluginTemplate) related [secrets](https://github.com/JetBrains/intellij-platform-plugin-template#environment-variables).
-- [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html?from=IJPluginTemplate).
-- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
+## What it does
 
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
+For each `it()` or `test()` call in a spec file, a color-coded block appears above the line showing the historical pass rate pulled from the last 7 days of Cypress Cloud runs:
+
+| Color | Meaning |
+|-------|---------|
+| 🟢 Green | 100% pass rate |
+| 🟡 Yellow | 75–99% pass rate (flaky) |
+| 🔴 Red | Below 75% or failing in the most recent run |
+| ⬜ Gray | No historical data (new test) |
+| 🔵 Blue | Dynamic title — cannot be statically matched |
+
+Each block displays `passes/total (rate%), failed in runs: #1234 #1235`. Run numbers are clickable and open the Cypress Cloud test replay directly.
+
+Supports all common `it()` forms:
+- `it('title', ...)`
+- `it("title", ...)`
+- `` it(`title`, ...) ``
+- Multi-line form where the title is on the next line
+
+Results are fetched once per spec file and cached for 5 minutes, so subsequent file opens are instant.
+
+## Requirements
+
+- A Cypress Cloud **Enterprise** plan (the Data Extract API is an Enterprise feature)
+- A Data Extract API token — generate one at **cloud.cypress.io → Integrations → Data Extract API**
+
+## Configuration
+
+Place a `flake-guard.json` file in your project root:
+
+```json
+{
+  "provider": "cypress-cloud",
+  "apiToken": "YOUR_DATA_EXTRACT_API_TOKEN"
+}
+```
+
+The plugin activates automatically when you open a `.cy.ts`, `.cy.js`, `.spec.ts`, or `.spec.js` file.
 
 ## Installation
 
-- Using the IDE built-in plugin system:
+**From disk (local build):**
 
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "cypress-radar-jetbrains"</kbd> >
-  <kbd>Install</kbd>
+1. Build the plugin:
+   ```bash
+   ./gradlew buildPlugin
+   ```
+2. In your IDE: **Settings → Plugins → ⚙️ → Install Plugin from Disk**
+3. Select `build/distributions/cypress-radar-0.0.1.zip`
+4. Restart the IDE
 
-- Using JetBrains Marketplace:
+**From JetBrains Marketplace** *(once published):*
 
-  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
+**Settings → Plugins → Marketplace** → search for **Cypress Radar** → Install
 
-  You can also download the [latest release](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID/versions) from JetBrains Marketplace and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+## Development
 
-- Manually:
+```bash
+# Run in a sandbox IDE
+./gradlew runIde
 
-  Download the [latest release](https://github.com/clementsehan/cypress-radar-jetbrains/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+# Build the plugin ZIP
+./gradlew buildPlugin
 
-
----
-Plugin based on the [IntelliJ Platform Plugin Template][template].
-
-[template]: https://github.com/JetBrains/intellij-platform-plugin-template
-[docs:plugin-description]: https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html#plugin-description-and-presentation
+# Run tests
+./gradlew test
+```
