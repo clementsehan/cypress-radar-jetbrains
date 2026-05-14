@@ -3,6 +3,10 @@
 # cypress-radar-jetbrains Changelog
 
 ## [Unreleased]
+### Added
+- `timeframe` config option to control how many days of run history are fetched (default: 7)
+- `cache` config option to adjust the result cache TTL in minutes (default: 30)
+- `projects` config option to filter results by specific Cypress project IDs
 
 ## [0.0.1] - 2026-05-09
 ### Added
