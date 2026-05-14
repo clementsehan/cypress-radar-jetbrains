@@ -1,62 +1,80 @@
 # Cypress Radar
 
-A JetBrains IDE plugin that displays Cypress test health inline in your spec files, powered by the **Cypress Cloud Data Extract API**.
+![Build](https://github.com/clementsehan/cypress-radar-jetbrains/workflows/Build/badge.svg)
+[![Version](https://img.shields.io/jetbrains/plugin/v/31748.svg)](https://plugins.jetbrains.com/plugin/31748)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/31748.svg)](https://plugins.jetbrains.com/plugin/31748)
 
-## What it does
+<!-- Plugin description -->
+**Cypress Radar** shows the historical pass rate of each Cypress test directly inside your spec files, powered by the Cypress Cloud Data Extract API.
 
-For each `it()` or `test()` call in a spec file, a color-coded block appears above the line showing the historical pass rate pulled from the last 7 days of Cypress Cloud runs:
+For each `it()` or `test()` call, a color-coded block appears above the line showing the last 7 days of run history:
 
-| Color | Meaning |
-|-------|---------|
-| 🟢 Green | 100% pass rate |
-| 🟡 Yellow | 75–99% pass rate (flaky) |
-| 🔴 Red | Below 75% or failing in the most recent run |
-| ⬜ Gray | No historical data (new test) |
-| 🔵 Blue | Dynamic title — cannot be statically matched |
+- **Green** — 100% pass rate
+- **Yellow** — 75–99% pass rate (flaky)
+- **Red** — below 75% or failing in the most recent run
+- **Gray** — no historical data yet (new test)
+- **Blue** — dynamic title that cannot be statically matched
 
-Each block displays `passes/total (rate%), failed in runs: #1234 #1235`. Run numbers are clickable and open the Cypress Cloud test replay directly.
+Each block shows `passes/total (rate%), failed in runs: #1234 #1235`. Run numbers are clickable and open the Cypress Cloud test replay directly in the browser.
 
-Supports all common `it()` forms:
-- `it('title', ...)`
-- `it("title", ...)`
-- `` it(`title`, ...) ``
-- Multi-line form where the title is on the next line
+**Supports all common `it()` forms:** single-quoted, double-quoted, backtick template literals, and multi-line declarations.
 
-Results are fetched once per spec file and cached for 5 minutes, so subsequent file opens are instant.
-
-## Requirements
-
-- A Cypress Cloud **Enterprise** plan (the Data Extract API is an Enterprise feature)
-- A Data Extract API token — generate one at **cloud.cypress.io → Integrations → Data Extract API**
-
-## Configuration
+**How to activate**
 
 Place a `flake-guard.json` file in your project root:
 
 ```json
-{
-  "provider": "cypress-cloud",
-  "apiToken": "YOUR_DATA_EXTRACT_API_TOKEN"
-}
+{ "provider": "cypress-cloud", "apiToken": "YOUR_DATA_EXTRACT_API_TOKEN" }
 ```
 
-The plugin activates automatically when you open a `.cy.ts`, `.cy.js`, `.spec.ts`, or `.spec.js` file.
+The plugin activates automatically when you open a `.cy.ts`, `.cy.js`, `.spec.ts`, or `.spec.js` file. Results are cached for 30 minutes.
+
+> Requires a **Cypress Cloud Enterprise** plan. Generate an API token at cloud.cypress.io → Integrations → Data Extract API.
+
+---
+
+**Works with:** IntelliJ IDEA, WebStorm, and all other JetBrains IDEs.
+
+---
+
+If you find this plugin useful, consider [buying me a coffee ☕](https://ko-fi.com/clemsehan) — it helps keep the project alive!
+
+---
+
+**Keywords:** cypress, flaky tests, test health, pass rate, inline, spec, e2e, test analytics, cypress cloud
+<!-- Plugin description end -->
+
+## Compatibility
+
+| IDE                                 | Minimum version |
+|-------------------------------------|-----------------|
+| IntelliJ IDEA Community & Ultimate  | 2024.1          |
+| WebStorm                            | 2024.1          |
+| PyCharm Community & Professional    | 2024.1          |
+| GoLand                              | 2024.1          |
+| Rider                               | 2024.1          |
+| CLion                               | 2024.1          |
+| RubyMine                            | 2024.1          |
+| PhpStorm                            | 2024.1          |
 
 ## Installation
 
-**From disk (local build):**
+- Using the IDE built-in plugin system:
 
-1. Build the plugin:
-   ```bash
-   ./gradlew buildPlugin
-   ```
-2. In your IDE: **Settings → Plugins → ⚙️ → Install Plugin from Disk**
-3. Select `build/distributions/cypress-radar-0.0.1.zip`
-4. Restart the IDE
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Cypress Radar"</kbd> >
+  <kbd>Install</kbd>
 
-**From JetBrains Marketplace** *(once published):*
+- Using JetBrains Marketplace:
 
-**Settings → Plugins → Marketplace** → search for **Cypress Radar** → Install
+  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/31748) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
+
+  You can also download the [latest release](https://plugins.jetbrains.com/plugin/31748/versions) from JetBrains Marketplace and install it manually using
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+
+- Manually:
+
+  Download the [latest release](https://github.com/clementsehan/cypress-radar-jetbrains/releases/latest) and install it manually using
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
 ## Development
 
@@ -70,3 +88,12 @@ The plugin activates automatically when you open a `.cy.ts`, `.cy.js`, `.spec.ts
 # Run tests
 ./gradlew test
 ```
+
+## Support
+
+If you find this plugin useful, consider [buying me a coffee ☕](https://ko-fi.com/clemsehan) on Ko-fi — it helps keep the project alive!
+
+---
+Plugin based on the [IntelliJ Platform Plugin Template][template].
+
+[template]: https://github.com/JetBrains/intellij-platform-plugin-template
