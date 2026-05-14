@@ -7,7 +7,7 @@
 <!-- Plugin description -->
 **Cypress Radar** shows the historical pass rate of each Cypress test directly inside your spec files, powered by the Cypress Cloud Data Extract API.
 
-For each `it()` or `test()` call, a color-coded block appears above the line showing the last 7 days of run history:
+For each `it()` or `test()` call, a color-coded block appears above the line showing the historical run data (7 days by default, configurable):
 
 - **Green** — 100% pass rate
 - **Yellow** — 75–99% pass rate (flaky)
@@ -21,13 +21,34 @@ Each block shows `passes/total (rate%), failed in runs: #1234 #1235`. Run number
 
 **How to activate**
 
-Place a `flake-guard.json` file in your project root:
+Place a `flake-guard.json` file in your project root and the plugin activates automatically when you open a `.cy.ts`, `.cy.js`, `.spec.ts`, or `.spec.js` file.
 
 ```json
-{ "provider": "cypress-cloud", "apiToken": "YOUR_DATA_EXTRACT_API_TOKEN" }
+{
+  "provider": "cypress-cloud",
+  "apiToken": "YOUR_DATA_EXTRACT_API_TOKEN"
+}
 ```
 
-The plugin activates automatically when you open a `.cy.ts`, `.cy.js`, `.spec.ts`, or `.spec.js` file. Results are cached for 30 minutes.
+| Key | Required | Default | Description |
+|-----|----------|---------|-------------|
+| `provider` | ✅ | — | Must be `"cypress-cloud"` |
+| `apiToken` | ✅ | — | Cypress Cloud Data Extract API token |
+| `timeframe` | | `7` | Number of days of run history to fetch |
+| `cache` | | `30` | How long (in minutes) to cache results before re-fetching |
+| `projects` | | all | Array of Cypress project IDs to filter on |
+
+Full example with all options:
+
+```json
+{
+  "provider": "cypress-cloud",
+  "apiToken": "YOUR_DATA_EXTRACT_API_TOKEN",
+  "timeframe": 14,
+  "cache": 60,
+  "projects": ["proj-abc123", "proj-def456"]
+}
+```
 
 > Requires a **Cypress Cloud Enterprise** plan. Generate an API token at cloud.cypress.io → Integrations → Data Extract API.
 

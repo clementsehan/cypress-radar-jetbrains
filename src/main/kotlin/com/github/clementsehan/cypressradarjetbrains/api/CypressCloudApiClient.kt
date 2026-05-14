@@ -20,13 +20,13 @@ class CypressCloudApiClient : FlakeGuardApiClient {
     private val lock = Any()
     private var cachedRecords: List<TestRecord>? = null
     private var cacheTime: Long = 0
-    private val CACHE_TTL_MS = 30 * 60 * 1_000L // 30 minutes — matches Cypress Cloud refresh cadence
 
     private fun getOrFetchRecords(config: FlakeGuardConfig, startDate: String): List<TestRecord> {
+        val cacheTtlMs = config.cache * 60 * 1_000L
         val now = System.currentTimeMillis()
         synchronized(lock) {
             val cached = cachedRecords
-            if (cached != null && (now - cacheTime) < CACHE_TTL_MS) {
+            if (cached != null && (now - cacheTime) < cacheTtlMs) {
                 LOG.info("Flake Guard: cache hit — ${cached.size} records (age ${(now - cacheTime) / 1000}s)")
                 return cached
             }
@@ -44,7 +44,7 @@ class CypressCloudApiClient : FlakeGuardApiClient {
         testTitles: List<String>,
         config: FlakeGuardConfig
     ): List<TestHealth> {
-        val startDate = LocalDate.now().minusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE)
+        val startDate = LocalDate.now().minusDays(config.timeframe.toLong()).format(DateTimeFormatter.ISO_LOCAL_DATE)
         val records = getOrFetchRecords(config, startDate)
         LOG.info("Flake Guard: received ${records.size} records from Data Extract API")
 
@@ -116,14 +116,16 @@ class CypressCloudApiClient : FlakeGuardApiClient {
     }
 
     private fun fetchTestDetails(config: FlakeGuardConfig, startDate: String): List<TestRecord> {
+        val projectsParams = config.projects.joinToString("") { "&projects=$it" }
         val endpoint = "https://cloud.cypress.io/enterprise-reporting/report" +
             "?token=${config.apiToken}" +
             "&report_id=test-details" +
             "&export_format=json" +
-            "&start_date=$startDate"
+            "&start_date=$startDate" +
+            projectsParams
 
-        // Log without the token
-        LOG.info("Flake Guard: GET enterprise-reporting/report?report_id=test-details&start_date=$startDate")
+        val logProjects = if (config.projects.isEmpty()) "" else "&projects=${config.projects.joinToString("&projects=")}"
+        LOG.info("Flake Guard: GET enterprise-reporting/report?report_id=test-details&start_date=$startDate$logProjects")
 
         val conn = URI.create(endpoint).toURL().openConnection() as HttpURLConnection
         conn.connectTimeout = 10_000
